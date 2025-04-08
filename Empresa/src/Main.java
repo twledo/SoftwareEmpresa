@@ -1,46 +1,72 @@
+import java.io.IOException;
+import java.util.Locale;
+
 public class Main {
     public static void main(String[] args) {
-        Enterprise enterprise = getEnterprise();
+        // Inicializa com logger e locale pt_BR
+        Enterprise empresa = new Enterprise(new ConsoleLogger(), new Locale("pt", "BR"));
 
-        // Atualização de salário
-        enterprise.updateWage(2, 4500); // válido
-        enterprise.updateWage(3, -500); // inválido
-        enterprise.updateWage(999, 3000); // ID inexistente
+        // Teste 1: Adição
+        System.out.println("=== Teste de Adição ===");
+        try {
+            empresa.addEmp("Thiago Silva", "Desenvolvedor", 5000.0);
+            empresa.addEmp("Ana Costa", "Gerente", 6000.0);
+            empresa.addEmp("Pedro Almeida", "Analista", 4500.0);
+            empresa.addEmp("123", "Testador", 3000.0); // Deve falhar
+        } catch (IllegalArgumentException e) {
+            System.out.println("Erro esperado: " + e.getMessage());
+        }
 
-        // Alteração de cargo
-        enterprise.changeLoad(1, "Arquiteta de Software");
-        enterprise.changeLoad(2, ""); // inválido
-        enterprise.changeLoad(999, "Novo Cargo"); // ID inexistente
+        // Teste 2: Listagem
+        System.out.println("\n=== Teste de Listagem ===");
+        empresa.showEmps();
 
-        // Exclusão de funcionários
-        enterprise.deleteEmp(2); // existente
-        enterprise.deleteEmp(999); // inexistente
-        enterprise.deleteEmp(-1); // ID inválido
+        // Teste 3: Busca
+        System.out.println("\n=== Teste de Busca ===");
+        empresa.searchEmployee(2);
+        empresa.searchEmployee(5);
 
-        // Mostra todos os funcionários restantes
-        enterprise.showEmps();
-    }
+        // Teste 4: Alteração de Cargo
+        System.out.println("\n=== Teste de Alteração de Cargo ===");
+        try {
+            empresa.changeRole(1, "Engenheiro de Software");
+            empresa.changeRole(10, "Diretor");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Erro esperado: " + e.getMessage());
+        }
 
-    private static Enterprise getEnterprise() {
-        Enterprise enterprise = new Enterprise();
+        // Teste 5: Atualização de Salário
+        System.out.println("\n=== Teste de Atualização de Salário ===");
+        try {
+            empresa.updateWage(2, 7000.0);
+            empresa.updateWage(3, -1000.0);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Erro esperado: " + e.getMessage());
+        }
 
-        // Testes de adição de funcionários
-        enterprise.addEmp(1, "Alice", "Engenheira", 5000);
-        enterprise.addEmp(2, "Bob", "Analista", 4200);
-        enterprise.addEmp(3, "Carol", "Gerente", 6800);
+        // Teste 6: Deleção
+        System.out.println("\n=== Teste de Deleção ===");
+        try {
+            boolean deleted = empresa.deleteEmp(1);
+            System.out.println("Deleção bem-sucedida? " + deleted);
+            empresa.deleteEmp(-1);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Erro esperado: " + e.getMessage());
+        }
 
-        // Tentativa de adicionar com ID duplicado
-        enterprise.addEmp(1, "Duplicado", "Teste", 1000);
+        // Teste 7: Listagem Final
+        System.out.println("\n=== Listagem Final ===");
+        empresa.showEmps();
 
-        // Testes com dados inválidos
-        enterprise.addEmp(-5, "ErroIDNegativo", "Dev", 3000);
-        enterprise.addEmp(4, "", "VazioNome", 3000);
-        enterprise.addEmp(5, "SemCargo", "", 3000);
-        enterprise.addEmp(6, "SalarioZero", "Dev", 0);
-
-        // Busca de funcionário
-        enterprise.searchEmployee(1); // Deve encontrar
-        enterprise.searchEmployee(999); // Não existe
-        return enterprise;
+        // Teste 8: Persistência
+        System.out.println("\n=== Teste de Persistência ===");
+        try {
+            empresa.saveToFile("employees.dat");
+            Enterprise empresa2 = new Enterprise(new ConsoleLogger(), new Locale("pt", "BR"));
+            empresa2.loadFromFile("employees.dat");
+            empresa2.showEmps();
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Erro de persistência: " + e.getMessage());
+        }
     }
 }
